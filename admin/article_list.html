@@ -76,10 +76,28 @@
 <!-- 准备一个 文章类别 模板 -->
 <script id="category_temp" type="text/html">
     <option value="">所有分类</option>
-{{each data v}}
+    {{each data v}}
     <option value="{{v.id}}">{{v.name}}</option>
-{{/each}}
+    {{/each}}
 </script>
+
+<!-- 准备一个文章列表的模板 -->
+<script id="articleList_temp" type="text/html">
+    {{each data.data v}}
+    <tr>
+        <td>{{v.title}}</td>
+        <td>{{v.author}}</td>
+        <td>{{v.category}}</td>
+        <td class="text-center">{{v.data}}</td>
+        <td class="text-center">{{v.state}}</td>
+        <td class="text-center">
+            <a href="article_edit.html" class="btn btn-default btn-xs">编辑</a>
+            <a href="javascript:void(0);" data-id={{v.categoryId}} class="btn btn-danger btn-xs delete">删除</a>
+        </td>
+    </tr>
+    {{/each}}
+</script>
+<!-- 基地址 -->
 <script src="./libs/http.js"></script>
 <script>
     // 入口函数
@@ -89,14 +107,32 @@
             type: 'get',
             url: BigNew.category_list,
             success: function (backData) {
-                console.log(backData); 
+                // console.log(backData);
                 if (backData.code == 200) {
                     //使用模板引擎渲染到下来菜单中
-                   var resHtml = template('category_temp',backData);
-                   $('#selCategory').html(resHtml);
+                    var resHtml = template('category_temp', backData);
+                    $('#selCategory').html(resHtml);
                 }
             }
         });
+
+        // 二.一进到页面就发送ajax请求,获取默认的文章数据列表.显示在页面是
+        $.ajax({
+            type: 'get',
+            url: BigNew.article_query,
+            data: {
+                type: $('#selCategory').val(), //文章类别
+                stata: $('#selStatus').val(),
+                page: 1,
+                perpage: 6
+            },
+            success: function (backData) {
+                if (backData.code == 200) {
+                    var resHtml = template('articleList_temp',backData)
+                    $('tbody').html(resHtml);
+                }
+            }
+        })
     })
 </script>
 
